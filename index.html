@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Laptop Stand Shop | CSE 463 Pre-test</title>
+<style>
+:root{font-family:system-ui,sans-serif;color:#15261e;background:#f5f7f4;line-height:1.5}*{box-sizing:border-box}body{margin:0}header{background:#183a2b;color:white;padding:16px max(24px,calc((100% - 1020px)/2));display:flex;justify-content:space-between;align-items:center;gap:16px}header strong{font-size:1.15rem;white-space:nowrap}header button{background:transparent;border-color:#afc6b9;color:white;white-space:nowrap}main{max-width:1068px;margin:auto;padding:27px 24px 44px}nav{display:flex;gap:8px;flex-wrap:wrap;font-size:.9rem;margin-bottom:22px}nav span{padding:5px 11px;border-radius:20px;background:#e8eee8;color:#47574d}nav [aria-current]{background:#d6ebdc;color:#123e28;font-weight:700}h1,h2,p{margin:0 0 10px}h1{font-size:clamp(1.9rem,4vw,2.65rem);line-height:1.15;letter-spacing:-.045em}h2{font-size:1.23rem}p{color:#43564a}.intro{margin-bottom:22px}.grid{display:grid;grid-template-columns:1.2fr 1fr;gap:16px}.products{grid-template-columns:repeat(2,minmax(0,1fr))}.card{background:white;border:1px solid #dce4dc;border-radius:16px;padding:21px}.photo{width:100%;height:205px;object-fit:contain;background:white;border-radius:12px;display:block;margin-bottom:12px}.detail .photo{height:290px}.kind{font-size:.9rem;color:#43564a}.price{font-size:1.32rem;font-weight:750;margin:8px 0}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}button{font:inherit;font-weight:700;border:1px solid #a5baaa;background:white;color:#173d2a;border-radius:9px;padding:9px 14px;cursor:pointer}button.primary{background:#176343;color:white;border-color:#176343}button:focus-visible{outline:3px solid #1b68a3;outline-offset:3px}button[aria-pressed=true]{background:#e0f0e5;border:2px solid #176343;padding:8px 13px}.line{display:flex;justify-content:space-between;gap:12px;margin:7px 0}.total{border-top:1px solid #ccd9cd;padding-top:10px;margin-top:12px;font-weight:750}.notice{border:1px solid #bc7731;background:#fff0dc;border-radius:12px;padding:14px 18px;margin-bottom:16px}.notice p{margin:3px 0}.success{background:#e2f2e7;border-color:#80b695}.options{display:grid;gap:8px;margin-top:12px}.options button{text-align:left}footer{max-width:1068px;margin:auto;padding:0 24px 20px;font-size:.85rem;color:#43564a}[hidden]{display:none!important} @media(max-width:650px){.grid{grid-template-columns:1fr}header strong{white-space:normal}.photo{height:160px}}
+</style>
+<header><strong>Laptop Stand Shop</strong><button data-act="reset">Reset prototype</button></header>
+<main id="app"></main><footer>CSE 463 academic prototype · Pre-test v1.0 · Simulated order</footer>
+<script>
+const products = [
+ {name:'BJÖRKÅSEN', description:'Foldable, height-adjustable floor stand', size:'18⅛ in', price:5999, image:'bjorkasen.jpg', colors:['Anthracite','Beige','Yellow-green']},
+ {name:'BOLLSIDAN', description:'Height-adjustable floor stand with casters', size:'26¾ in', price:10999, image:'bollsidan.jpg', colors:['White']}
+];
+const modes = {
+ pickup:{name:'Phoenix store pickup', timing:'Tomorrow, 3–7 PM', fee:0},
+ later:{name:'Phoenix store pickup', timing:'Friday, 3–7 PM', fee:0},
+ delivery:{name:'Home delivery', timing:'Friday, 9 AM–6 PM', fee:1400}
+};
+const app=document.querySelector('#app');
+const initial=()=>({screen:1, product:0, color:'Anthracite', mode:null, checked:false, unavailable:false, edit:false});
+let state=initial();
+const money=cents=>'$'+(cents/100).toFixed(2);
+const button=(label,act,cls='',value='')=>`<button class="${cls}" data-act="${act}" data-value="${value}">${label}</button>`;
+const actions=(...buttons)=>`<div class="actions">${buttons.join('')}</div>`;
+const photo=p=>`<img class="photo" src="${p.image}" alt="${p.name} reference photo in ${p.colors[0]}">`;
+function item(p){
+ return `<h2>${p.name}</h2><p>${p.description}</p><p>${state.color} · Quantity 1 · ${p.size} wide</p><strong>${money(p.price)}</strong>`;
+}
+function price(p,mode){
+ const fee=mode?.fee ?? 0;
+ const tax=Math.round((p.price+fee)*.086);
+ return `<section class="card"><h2>${mode?'Order total':'Estimated total before fulfillment'}</h2>
+ <div class="line"><span>Item</span><span>${money(p.price)}</span></div>
+ <div class="line"><span>Fulfillment</span><span>${mode?money(fee):'Choose at next step'}</span></div>
+ <div class="line"><span>Simulated tax</span><span>${money(tax)}</span></div>
+ <div class="line total"><span>${mode?'Total':'Estimate'}</span><span>${money(p.price+fee+tax)}</span></div></section>`;
+}
+function fulfillmentChoice(key){
+ const m=modes[key];
+ return `<button data-act="mode" data-value="${key}" aria-pressed="${state.mode===key}">${m.name} · ${m.timing} · ${money(m.fee)}</button>`;
+}
+function render(focus=true){
+ const {screen,color,unavailable}=state;
+ const p=products[state.product], mode=modes[state.mode];
+ const headings=['Laptop stands','Product details','Shopping bag','Choose pickup or delivery','Pickup time no longer available','Review your order','Order confirmed'];
+ const active=[0,0,1,2,2,3,4][screen-1];
+ let content='';
+ if(screen===1){
+  content=`<p class="intro">Compare floor stands by width, features, and price.</p><div class="grid products">${products.map((product,i)=>`<article class="card">${photo(product)}<h2>${product.name}</h2><p>${product.description}</p><p>Stand width · ${product.size}</p><div class="price">${money(product.price)}</div>${button('View '+product.name,'product','primary',i)}</article>`).join('')}</div>`;
+ }else if(screen===2){
+  content=`<div class="grid detail"><div class="card">${photo(p)}<p class="kind">Reference photo · ${p.colors[0]}</p></div><section class="card"><h2>${p.name}</h2><p>${p.description}</p><p>Stand width · ${p.size}</p><div class="price">${money(p.price)}</div><h2>Color · ${color}</h2><div class="actions">${p.colors.map(c=>`<button data-act="color" data-value="${c}" aria-pressed="${c===color}">${c}</button>`).join('')}</div>${actions(button(state.edit?'Save item changes':'Add to bag','bag','primary'),button('Compare stands','go','','1'))}</section></div>`;
+ }else if(screen===3){
+  content=`<div class="grid"><section class="card">${item(p)}${actions(button('Edit item','edit'))}</section>${price(p,mode)}</div>${actions(button('Choose fulfillment','go','primary','4'))}`;
+ }else if(screen===4 || screen===5){
+  content=`${screen===5?'<div class="notice" role="alert"><strong>Tomorrow’s Phoenix pickup slot just filled.</strong><p>Your item and color are still in your bag. Choose another time or home delivery to continue.</p></div>':''}<div class="grid"><section class="card"><h2>Fulfillment options</h2><div class="options">${unavailable?'':fulfillmentChoice('pickup')}${fulfillmentChoice('later')}${fulfillmentChoice('delivery')}</div>${actions(button('Continue to review','review','primary'),button('Back to bag','go','','3'))}<p id="hint" role="status"></p></section><section class="card">${item(p)}${mode?'<p style="margin-top:12px">Selected · '+mode.timing+'</p>':''}</section></div>`;
+ }else{
+  content=`${screen===7?'<div class="notice success" role="status"><strong>Simulated order LS-463-01 is complete.</strong><p>No payment was collected. Use the fulfillment details below to check what you selected.</p></div>':'<p class="intro">Check your stand, fulfillment details, and total before confirming.</p>'}<div class="grid"><section class="card">${item(p)}<hr><h2>${mode.name}</h2><p>${mode.timing}</p><p>${state.mode==='delivery'?'Alex Rivera · 123 Demo Avenue, Phoenix, AZ':'Pickup name · Alex Rivera'}</p>${screen===6?actions(button('Edit item','edit'),button('Change fulfillment','go','','4')):''}</section>${price(p,mode)}</div>${actions(screen===6?button('Confirm simulated order','confirm','primary'):button('Start a new order','reset','primary'))}`;
+ }
+ app.innerHTML=`<nav aria-label="Shopping progress">${['Shop','Bag','Fulfillment','Review','Complete'].map((label,i)=>`<span ${i===active?'aria-current="step"':''}>${label}</span>`).join('')}</nav><h1 tabindex="-1">${headings[screen-1]}</h1>${content}`;
+ if(focus){app.querySelector('h1').focus();window.scrollTo(0,0);}
+}
+document.addEventListener('click',event=>{
+ const target=event.target.closest('button[data-act]');
+ if(!target)return;
+ const {act,value}=target.dataset;
+ if(act==='reset')state=initial();
+ if(act==='go')state.screen=Number(value);
+ if(act==='product'){
+  state.product=Number(value);state.color=products[state.product].colors[0];state.screen=2;
+ }
+ if(act==='color'||act==='mode'){
+  state[act]=value;render(false);
+  [...app.querySelectorAll('button[data-act]')].find(b=>b.dataset.act===act&&b.dataset.value===value).focus();
+  return;
+ }
+ if(act==='bag'){state.screen=state.edit&&state.mode?6:3;state.edit=false;}
+ if(act==='edit'){state.edit=state.screen===6;state.screen=2;}
+ if(act==='review'){
+  if(!state.mode){document.querySelector('#hint').textContent='Choose a fulfillment option to continue.';return;}
+  if(state.mode==='pickup'){
+   state.mode=null;state.unavailable=true;state.screen=5;
+  }else state.screen=6;
+ }
+ if(act==='confirm')state.screen=7;
+ render();
+});
+render(false);
+</script>
+</html>
